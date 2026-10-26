@@ -1,0 +1,23 @@
+.vercel
+
+# Python environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Training dataset (not included in repository)
+phishing_site_urls.csv
+
+# Secrets
+.env
+.env.*
+
+# Vercel local configuration
+.vercel/
+
+# Editor and OS files
+.vscode/
+.DS_Store
+Thumbs.db

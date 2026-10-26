@@ -1,0 +1,402 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1020">
+  <title>LinkShield | Phishing URL Detector</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #121a2d;
+      --border: #26334b;
+      --text: #edf2ff;
+      --muted: #9aa9c3;
+      --accent: #75e0c1;
+      --danger: #ff777f;
+      --warning: #ffd479;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at top, #192848 0%, var(--bg) 55%);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+    }
+
+    .container {
+      width: min(760px, calc(100% - 32px));
+      margin: auto;
+      padding: 34px 0 48px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 58px;
+    }
+
+    .logo {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid #315e61;
+      border-radius: 13px;
+      background: #153337;
+      color: var(--accent);
+      font-size: 24px;
+    }
+
+    .brand { font-size: 19px; font-weight: 750; }
+    .tagline { color: var(--muted); font-size: 12px; }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 12px 0;
+      font-size: clamp(32px, 7vw, 52px);
+      line-height: 1.12;
+      letter-spacing: -1.7px;
+    }
+
+    .intro {
+      max-width: 590px;
+      margin-bottom: 30px;
+      color: var(--muted);
+    }
+
+    .panel {
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(18, 26, 45, 0.92);
+      box-shadow: 0 24px 70px #00000026;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 9px;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input {
+      min-width: 0;
+      flex: 1;
+      padding: 14px;
+      border: 1px solid #35445f;
+      border-radius: 11px;
+      outline: none;
+      background: #0b1222;
+      color: var(--text);
+      font: inherit;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px #75e0c122;
+    }
+
+    button {
+      padding: 13px 18px;
+      border: 0;
+      border-radius: 11px;
+      background: var(--accent);
+      color: #09201c;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .hint, .status, .disclaimer, footer {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .hint { margin: 10px 0 0; }
+    .status { min-height: 24px; margin-top: 12px; }
+
+    .result {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: #0d1425;
+    }
+
+    .result[hidden] { display: none; }
+
+    .result-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .result-icon { font-size: 30px; }
+    .result h2 { margin: 0; font-size: 21px; }
+    .result p { overflow-wrap: anywhere; }
+    .muted { color: var(--muted); font-size: 13px; }
+
+    .meter {
+      height: 7px;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #26334b;
+    }
+
+    .meter-fill {
+      height: 100%;
+      width: 0;
+      background: var(--warning);
+      transition: width 250ms ease;
+    }
+
+    .flags { padding-left: 20px; }
+    .flags li { margin: 5px 0; }
+
+    .disclaimer {
+      margin-top: 18px;
+      padding: 12px;
+      border-left: 3px solid var(--warning);
+      background: #ffd4790a;
+    }
+
+    footer {
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    @media (max-width: 540px) {
+      .container { padding-top: 22px; }
+      header { margin-bottom: 42px; }
+      .panel { padding: 18px; }
+      .input-row { flex-direction: column; }
+      button { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <header>
+      <div class="logo" aria-hidden="true">⛨</div>
+      <div>
+        <div class="brand">LinkShield</div>
+        <div class="tagline">Machine-learning URL analysis</div>
+      </div>
+    </header>
+
+    <section>
+      <div class="eyebrow">Browse with awareness</div>
+      <h1>Before you click,<br>check the link.</h1>
+      <p class="intro">
+        Analyze URL patterns with a machine-learning model to identify
+        links that may be associated with phishing.
+      </p>
+
+      <div class="panel">
+        <form id="scan-form">
+          <label for="url-input">URL to analyze</label>
+          <div class="input-row">
+            <input
+              id="url-input"
+              name="url"
+              type="text"
+              placeholder="https://example.com/"
+              maxlength="2048"
+              autocomplete="url"
+              required
+              aria-describedby="url-hint"
+            >
+            <button id="analyze-button" type="submit">Analyze URL</button>
+          </div>
+          <p class="hint" id="url-hint">
+            Enter a complete URL beginning with http:// or https://.
+          </p>
+        </form>
+
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+
+        <section class="result" id="result" aria-live="polite" hidden>
+          <div class="result-heading">
+            <span class="result-icon" id="result-icon" aria-hidden="true"></span>
+            <div>
+              <h2 id="result-title"></h2>
+              <div class="muted" id="result-summary"></div>
+            </div>
+          </div>
+
+          <p><strong>Analyzed URL:</strong></p>
+          <p id="result-url"></p>
+
+          <p>
+            <strong>Model score:</strong>
+            <span id="score-text"></span>
+          </p>
+          <div
+            class="meter"
+            role="progressbar"
+            id="score-meter"
+            aria-label="Estimated phishing probability"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+          >
+            <div class="meter-fill" id="score-fill"></div>
+          </div>
+          <p class="muted" id="threshold-text"></p>
+
+          <h3>URL pattern flags</h3>
+          <ul class="flags" id="flags-list"></ul>
+          <p class="muted" id="no-flags" hidden>
+            None of the basic pattern checks were triggered. This does not
+            mean the URL is safe.
+          </p>
+
+          <div class="disclaimer" id="result-disclaimer"></div>
+        </section>
+      </div>
+    </section>
+
+    <footer>
+      LinkShield is an educational prototype. It does not visit URLs or
+      guarantee that a link is safe.
+    </footer>
+  </main>
+
+  <script>
+    const form = document.getElementById("scan-form");
+    const input = document.getElementById("url-input");
+    const button = document.getElementById("analyze-button");
+    const status = document.getElementById("status");
+    const result = document.getElementById("result");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const url = input.value.trim();
+
+      result.hidden = true;
+      status.textContent = "";
+
+      if (!url || url.length > 2048) {
+        status.textContent = "Enter a URL between 1 and 2048 characters.";
+        return;
+      }
+
+      if (!/^https?:\/\//i.test(url)) {
+        status.textContent = "Please include http:// or https://.";
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Analyzing...";
+      status.textContent = "Analyzing URL patterns. Please wait.";
+
+      try {
+        const response = await fetch("/api/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          const detail = Array.isArray(data.detail)
+            ? data.detail.map(item => item.msg).join("; ")
+            : data.detail;
+          throw new Error(detail || "The API rejected this URL.");
+        }
+
+        showResult(url, data);
+        status.textContent = "Analysis complete.";
+      } catch (error) {
+        status.textContent =
+          "Could not analyze this URL: " + error.message +
+          " Check that the app server is running.";
+      } finally {
+        button.disabled = false;
+        button.textContent = "Analyze URL";
+      }
+    });
+
+    function showResult(url, data) {
+      const isBad = data.label === "bad";
+      const percentage = Math.round(data.score * 100);
+
+      document.getElementById("result-icon").textContent =
+        isBad ? "⚠️" : "✓";
+
+      document.getElementById("result-title").textContent =
+        isBad ? "Potential phishing detected" : "Classified as likely legitimate";
+
+      document.getElementById("result-summary").textContent =
+        data.explanation;
+
+      // Use textContent for all user-supplied and API-provided text.
+      document.getElementById("result-url").textContent = url;
+      document.getElementById("score-text").textContent =
+        percentage + "% estimated phishing probability";
+
+      const meter = document.getElementById("score-meter");
+      meter.setAttribute("aria-valuenow", String(percentage));
+
+      document.getElementById("score-fill").style.width =
+        percentage + "%";
+
+      document.getElementById("threshold-text").textContent =
+        "Classification threshold: " +
+        Math.round(data.threshold * 100) + "%";
+
+      const list = document.getElementById("flags-list");
+      list.replaceChildren();
+
+      for (const flag of data.red_flags) {
+        const item = document.createElement("li");
+        item.textContent = flag;
+        list.appendChild(item);
+      }
+
+      document.getElementById("no-flags").hidden =
+        data.red_flags.length !== 0;
+
+      document.getElementById("result-disclaimer").textContent =
+        data.disclaimer;
+
+      result.hidden = false;
+    }
+  </script>
+</body>
+</html>
